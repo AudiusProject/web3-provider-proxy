@@ -1,0 +1,12 @@
+name = "web3-provider-proxy"
+type = "javascript"
+account_id = ""
+workers_dev = true
+zone_id = ""
+
+route = ""
+
+[vars]
+EDGE_CACHE_TTL = 60
+BROWSER_CACHE_TTL = 0
+PROVIDERS = '["https://some.provider.co/api-key"]'
