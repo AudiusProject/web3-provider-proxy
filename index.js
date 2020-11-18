@@ -60,13 +60,14 @@ async function tryProvider (url, request) {
  * Gets a response from the origin. In our case, a web3 provider endpoint.
  * @param {string} url 
  * @param {Event} event 
- * @param {Request} cacheKey 
+ * @param {Request?} cacheKey if cacheKey is not provided, the response is not cached
  */
 async function getOriginResponse (url, event, cacheKey) {
   const cache = caches.default
 
   // Try origin requests until we get a response
   let response = await tryProvider(url, event.request)
+  if (!cacheKey) return response
 
   const headers = { 'Cache-Control': `public, max-age=${EDGE_CACHE_TTL}` }
   response = new Response(response.body, { ...response, headers })
@@ -161,13 +162,21 @@ async function handlePost(event) {
   const url = new URL(request.url)
   const cache = caches.default
   const body = await request.clone().json()
-  const id = body.id
+  const { method, id, jsonrpc } = body
+
+  // Don't cache eth block number calls
+  const bypassCache = method === 'eth_blockNumber'
+  if (bypassCache) {
+    const response = await getOriginResponse(url, event)
+    return formatResponse(response, { id })
+  }
+
+  // Create a cache key based on method, jsonrpc version, and the rest of the body
+  const cacheable = { method, jsonrpc, ...body.params }
   const cacheableBody = JSON.stringify(body.params)
   const hash = await sha256(cacheableBody)
-
   // Store the URL in cache by adding the body's hash
   url.pathname = "/posts" + url.pathname + hash
-
   // Convert to a GET to be able to cache
   const cacheKey = new Request(url.toString(), {
     headers: request.headers,
