@@ -9,11 +9,15 @@
  *
  *   PROVIDERS: string[]
  *    - Array of web3 provider endpoints to use
+ *
+ *   PROVIDER_TIMEOUT: number
+ *    - Timeout in ms for requests to a provider before trying another
  */
 
 EDGE_CACHE_TTL = EDGE_CACHE_TTL || 60
 BROWSER_CACHE_TTL = BROWSER_CACHE_TTL || 0
 PROVIDERS = JSON.parse(PROVIDERS)
+PROVIDER_TIMEOUT = PROVIDER_TIMEOUT || 5000
 
 /**
  * sha256 encodes a given string message
@@ -34,6 +38,21 @@ async function sha256(message) {
 }
 
 /**
+ * Wrapper around fetch with an optional timeout
+ * @param {Url} url
+ * @param {Request} request
+ * @param {number} timeout
+ */
+async function fetchWithTimeout(url, request, timeout) {
+  return Promise.race([
+        fetch(url, request),
+        new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout')), timeout)
+        )
+    ])
+}
+
+/**
  * Recursively tries to get a response from a random provider
  * @param {string} url 
  * @param {Event} event 
@@ -41,6 +60,7 @@ async function sha256(message) {
 async function tryProvider (url, request) {
   // Pick a random provider
   const provider = new URL(PROVIDERS[Math.floor(Math.random() * PROVIDERS.length)])
+  console.log('Attempting provider: ', provider.hostname)
   // Set the current URL hostname and pathname
   url.hostname = provider.hostname
   url.pathname = provider.pathname
@@ -48,7 +68,8 @@ async function tryProvider (url, request) {
   // Fetch the original request against the chosen provider and cache the result
   let response
   try {
-    response = await fetch(url, request)
+    response = await fetchWithTimeout(url, request.clone(), PROVIDER_TIMEOUT)
+    if (!response.ok) throw new Error(`${url.toString()} not ok!`)
   } catch (e) {
     console.error(e)
     response = await tryProvider(url, request)
