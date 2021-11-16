@@ -4,6 +4,7 @@ type = "javascript"
 workers_dev = true
 zone_id = ""
 
+compatibility_date = "2021-11-16"
 route = ""
 
 [vars]
