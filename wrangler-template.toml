@@ -1,12 +1,15 @@
+account_id = ""
 name = "web3-provider-proxy"
 type = "javascript"
-account_id = ""
 workers_dev = true
 zone_id = ""
 
+compatibility_date = "2021-11-16"
 route = ""
 
 [vars]
-EDGE_CACHE_TTL = 60
 BROWSER_CACHE_TTL = 0
+CORS_WHITELIST = '["example.com"]'
+EDGE_CACHE_TTL = 60
 PROVIDERS = '["https://some.provider.co/api-key"]'
+PROVIDER_TIMEOUT = 5000

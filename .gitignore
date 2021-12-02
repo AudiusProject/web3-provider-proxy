@@ -9,3 +9,7 @@ worker/
 node_modules/
 .cargo-ok
 wrangler.toml
+wrangler.bsc.toml
+wrangler-template.toml
+wrangler.eth-backend.toml
+wrangler.eth.toml
