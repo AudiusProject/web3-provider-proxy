@@ -185,8 +185,13 @@ async function handlePost(event) {
   const body = await request.clone().json()
   const { method, id, jsonrpc } = body
 
-  // Don't cache eth block number calls
-  const bypassCache = method === 'eth_blockNumber'
+  // Bypass cache for
+  // * blockNumber calls
+  // * estimateGas calls
+  const bypassCache =
+    method === 'eth_blockNumber' ||
+    method === 'eth_estimateGas'
+
   if (bypassCache) {
     const response = await getOriginResponse(url, event)
     return formatResponse(response, { id })
