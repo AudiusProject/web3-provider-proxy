@@ -193,7 +193,7 @@ async function handlePost(event) {
   const bypassCache =
     method === 'eth_blockNumber' ||
     method === 'eth_estimateGas' ||
-    userAgent.includes('iPhone')
+    userAgent.includes('Darwin')
 
   if (bypassCache) {
     const response = await getOriginResponse(url, event)
