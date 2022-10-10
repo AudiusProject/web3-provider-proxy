@@ -10,3 +10,4 @@ route = ""
 EDGE_CACHE_TTL = 60
 BROWSER_CACHE_TTL = 0
 PROVIDERS = '["https://some.provider.co/api-key"]'
+PROVIDER_TIMEOUT = 5000

@@ -184,16 +184,23 @@ async function handlePost(event) {
   const cache = caches.default
   const body = await request.clone().json()
   const { method, id, jsonrpc } = body
+  const userAgent = request.headers.get('User-Agent') || '';
 
-  // Don't cache eth block number calls
-  const bypassCache = method === 'eth_blockNumber'
+  // Bypass cache for
+  // * blockNumber calls
+  // * estimateGas calls
+  // * iPhone devices (temporarily, until the 500 response we are getting is fixed)
+  const bypassCache =
+    method === 'eth_blockNumber' ||
+    method === 'eth_estimateGas' ||
+    userAgent.includes('iPhone')
+
   if (bypassCache) {
     const response = await getOriginResponse(url, event)
     return formatResponse(response, { id })
   }
 
   // Create a cache key based on method, jsonrpc version, and the rest of the body
-  const cacheable = { method, jsonrpc, ...body.params }
   const cacheableBody = JSON.stringify(body.params)
   const hash = await sha256(cacheableBody)
   // Store the URL in cache by adding the body's hash
